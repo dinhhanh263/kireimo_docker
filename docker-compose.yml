@@ -1,0 +1,61 @@
+version: "3"
+services: 
+  web:
+    build:
+      context: ./dockerfiles
+      dockerfile: Dockerfile
+    volumes:
+      - ./app/web_public_html/:/var/www/html
+      - ./app/conf.d/:/etc/apache2/conf-enabled/
+    environment:
+      TZ: ${TIMEZONE}
+    ports:
+      - 81:80
+    links:
+      - db
+    depends_on:
+      - db
+
+  sys:
+    build:
+      context: ./dockerfiles
+      dockerfile: DockerfileSys
+    volumes:
+      - ./app/sys_public_html/:/var/www/html
+    environment:
+      TZ: ${TIMEZONE}
+    ports:
+      - 82:80
+    links:
+      - db
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.6.39
+    environment:
+      MYSQL_DATABASE: sample_database
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user 
+      MYSQL_PASSWORD: password
+      TZ: ${TIMEZONE}
+    volumes:
+    - ./db/data:/var/lib/mysql
+    - ./db/sql:/docker-entrypoint-initdb.d
+    - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports: 
+    - 3316:3306
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    links:
+      - db
+    ports:
+      - 18080:80
+    volumes:
+      - ./phpmyadmin/sessions:/sessions

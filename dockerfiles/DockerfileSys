@@ -1,0 +1,15 @@
+FROM php:7.0.25-apache
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install mysqli
+
+# デバッグを有効にする
+RUN pecl install xdebug \
+  && docker-php-ext-enable xdebug
+
+RUN apt-get update
+RUN apt-get install -y libmcrypt-dev
+RUN docker-php-ext-install mcrypt
+
+COPY phpSys.ini /usr/local/etc/php/php.ini
+
+
